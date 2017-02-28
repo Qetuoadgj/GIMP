@@ -1,0 +1,31 @@
+
+sharpen       = [8, 8]
+contrast      = [-80, -25]
+mask_radius   = [8, 8]
+pct_white     = [0.16, 0.16]
+low_threshold = [243, 220]
+
+image = gimp.image_list()[0]
+drawable = pdb.gimp_image_get_active_drawable(image)
+original = drawable
+pdb.gimp_selection_none(image)
+
+for i in range(0, 2):
+	layer = pdb.gimp_layer_copy(original, 0)
+	pdb.gimp_image_add_layer(image, layer, 0)
+	drawable = layer
+	pdb.plug_in_sharpen(image, drawable, sharpen[i])
+	B = pdb.gimp_channel_new_from_component(image, 2, "B")
+	pdb.gimp_image_add_channel(image, B, 0)
+	pdb.gimp_image_select_item(image, 2, B)
+	pdb.gimp_selection_invert(image)
+	pdb.gimp_brightness_contrast(drawable, 0, contrast[i])
+	pdb.gimp_image_remove_channel(image, B)
+	pdb.gimp_selection_none(image)
+	pdb.plug_in_photocopy(image, drawable, mask_radius[i], 0.8, 0.50, pct_white[i])
+	pdb.gimp_threshold(drawable, low_threshold[i], 255)
+	if (i > 0):
+		pdb.gimp_layer_set_opacity(layer, 50)
+		merged = pdb.gimp_image_merge_down(image, layer, 1)
+		pdb.gimp_threshold(merged, 255, 255)
+

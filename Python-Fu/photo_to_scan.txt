@@ -1,0 +1,165 @@
+---
+ДЛЯ ОБЫЧНЫХ
+---
+
+image = gimp.image_list()[0]
+drawable = pdb.gimp_image_get_active_drawable(image)
+pdb.gimp_brightness_contrast(drawable, 0, -20)
+pdb.plug_in_photocopy(image, drawable, 8.0, 0.8, 0.5, 0.95)
+pdb.gimp_threshold(drawable, 255, 255)
+image
+
+---
+ДЛЯ НЕЧЕТКИХ
+---
+
+image = gimp.image_list()[0]
+drawable = pdb.gimp_image_get_active_drawable(image)
+pdb.plug_in_normalize(image, drawable)
+pdb.gimp_brightness_contrast(drawable, 0, -30)
+pdb.plug_in_photocopy(image, drawable, 50.0, 0.8, 0.5, 0.95)
+pdb.gimp_threshold(drawable, 255, 255)
+image
+
+---
+ТЕСТ
+---
+
+image = gimp.image_list()[0]
+drawable = pdb.gimp_image_get_active_drawable(image)
+pdb.plug_in_normalize(image, drawable)
+pdb.gimp_brightness_contrast(drawable, 0, -25)
+pdb.plug_in_photocopy(image, drawable, 8.0, 0.8, 0.5, 0.95)
+pdb.gimp_threshold(drawable, 255, 255)
+image
+
+---
+
+
+image = gimp.image_list()[0]
+drawable = pdb.gimp_image_get_active_drawable(image)
+
+channel = pdb.gimp_channel_new_from_component(image, 2, "Blue")
+pdb.gimp_image_add_channel(image, channel, 1)
+pdb.gimp_image_select_item(image, 2, channel)
+
+pdb.gimp_selection_invert(image)
+
+pdb.gimp_brightness_contrast(drawable, 0, -30)
+
+pdb.gimp_selection_none(image)
+
+pdb.plug_in_photocopy(image, drawable, 8.0, 0.8, 0.5, 0.95)
+pdb.gimp_threshold(drawable, 255, 255)
+
+---
+
+contrast = -10
+image = gimp.image_list()[0]
+drawable = pdb.gimp_image_get_active_drawable(image)
+
+R = pdb.gimp_channel_new_from_component(image, 0, "R")
+G = pdb.gimp_channel_new_from_component(image, 1, "G")
+B = pdb.gimp_channel_new_from_component(image, 2, "B")
+
+pdb.gimp_image_add_channel(image, R, 1)
+pdb.gimp_image_add_channel(image, G, 1)
+pdb.gimp_image_add_channel(image, B, 1)
+
+pdb.gimp_image_select_item(image, 2, R)
+pdb.gimp_selection_invert(image)
+pdb.gimp_brightness_contrast(drawable, 0, contrast)
+pdb.gimp_image_remove_channel(image, R)
+
+pdb.gimp_image_select_item(image, 2, G)
+pdb.gimp_selection_invert(image)
+pdb.gimp_brightness_contrast(drawable, 0, contrast)
+pdb.gimp_image_remove_channel(image, G)
+
+pdb.gimp_image_select_item(image, 2, B)
+pdb.gimp_selection_invert(image)
+pdb.gimp_brightness_contrast(drawable, 0, contrast)
+pdb.gimp_image_remove_channel(image, B)
+
+pdb.gimp_selection_none(image)
+
+pdb.plug_in_photocopy(image, drawable, 8.0, 0.8, 0.5, 0.95)
+pdb.gimp_threshold(drawable, 255, 255)
+
+---
+
+contrast = -10
+mask_radius = 50
+pct_white = 0.095
+low_threshold = 200
+
+image = gimp.image_list()[0]
+drawable = pdb.gimp_image_get_active_drawable(image)
+
+R = pdb.gimp_channel_new_from_component(image, 0, "R")
+G = pdb.gimp_channel_new_from_component(image, 1, "G")
+B = pdb.gimp_channel_new_from_component(image, 2, "B")
+
+pdb.gimp_image_add_channel(image, R, 1)
+pdb.gimp_image_add_channel(image, G, 1)
+pdb.gimp_image_add_channel(image, B, 1)
+
+pdb.gimp_image_select_item(image, 2, R)
+pdb.gimp_selection_invert(image)
+pdb.gimp_brightness_contrast(drawable, 0, contrast)
+pdb.gimp_image_remove_channel(image, R)
+
+pdb.gimp_image_select_item(image, 2, G)
+pdb.gimp_selection_invert(image)
+pdb.gimp_brightness_contrast(drawable, 0, contrast)
+pdb.gimp_image_remove_channel(image, G)
+
+pdb.gimp_image_select_item(image, 2, B)
+pdb.gimp_selection_invert(image)
+pdb.gimp_brightness_contrast(drawable, 0, contrast)
+pdb.gimp_image_remove_channel(image, B)
+
+pdb.gimp_selection_none(image)
+
+pdb.plug_in_photocopy(image, drawable, mask_radius, 0.75, 0.50, pct_white)
+pdb.gimp_threshold(drawable, low_threshold, 255)
+
+
+---
+
+contrast = -10
+mask_radius = 8
+pct_white = 0.95
+low_threshold = 254
+
+image = gimp.image_list()[0]
+drawable = pdb.gimp_image_get_active_drawable(image)
+
+R = pdb.gimp_channel_new_from_component(image, 0, "R")
+G = pdb.gimp_channel_new_from_component(image, 1, "G")
+B = pdb.gimp_channel_new_from_component(image, 2, "B")
+
+pdb.gimp_image_add_channel(image, R, 1)
+pdb.gimp_image_add_channel(image, G, 1)
+pdb.gimp_image_add_channel(image, B, 1)
+
+pdb.gimp_image_select_item(image, 2, R)
+pdb.gimp_selection_invert(image)
+pdb.gimp_brightness_contrast(drawable, 0, contrast)
+pdb.gimp_image_remove_channel(image, R)
+
+pdb.gimp_image_select_item(image, 2, G)
+pdb.gimp_selection_invert(image)
+pdb.gimp_brightness_contrast(drawable, 0, contrast)
+pdb.gimp_image_remove_channel(image, G)
+
+pdb.gimp_image_select_item(image, 2, B)
+pdb.gimp_selection_invert(image)
+pdb.gimp_brightness_contrast(drawable, 0, contrast)
+pdb.gimp_image_remove_channel(image, B)
+
+pdb.gimp_selection_none(image)
+
+pdb.plug_in_photocopy(image, drawable, mask_radius, 0.75, 0.50, pct_white)
+pdb.gimp_threshold(drawable, low_threshold, 255)
+
