@@ -1,5 +1,5 @@
 
-## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.1
+## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.2
 
 # подключение библиотек
 import os
@@ -8,7 +8,7 @@ import glob
 # назначение параметров обработки
 mode			= 1
 # путь и маска для обрабатываемых файлов (mode == 3)
-directory		= "D:\\Downloads\\GIMP_test\\test\\"
+directory		= "D:\Downloads\GIMP_test\test\"
 pattern			= "*.jpg"
 # закрывать обработанный файл (mode == 2)
 close_files		= 1
@@ -36,7 +36,11 @@ channel_B		= 1
 extra_pass		= 1
 extra_mix		= 50
 
-# ОБРАБОТКА ФАЙЛОВ
+# смена кодировки
+directory = directory.encode('cp1251')
+pattern = pattern.encode('cp1251')
+
+# функция обработки файлов
 def photo_to_scan():
 	# создание списка обрабатываемых файлов
 	file_list = []
