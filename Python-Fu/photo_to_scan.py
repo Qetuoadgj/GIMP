@@ -1,4 +1,4 @@
-## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py
+## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.0
 
 # подключение библиотек
 import os
@@ -110,6 +110,9 @@ for file in file_list:
 			mask_radius_calculated = mask_radius[i] * pow(float(width*height) / float(dimensions[0]*dimensions[1]), 0.5)
 		else:
 			mask_radius_calculated = mask_radius[i]
+		# нормализация параметра mask_radius_calculated между 3.0 и 50.0
+		mask_radius_calculated = min(mask_radius_calculated, 50.0)
+		mask_radius_calculated = max(mask_radius_calculated, 3.0)
 		# применение эффекта
 		pdb.plug_in_photocopy(image, drawable, mask_radius_calculated, 0.75, 0.50, pct_white[i])
 		# применение эффекта "Порог"
