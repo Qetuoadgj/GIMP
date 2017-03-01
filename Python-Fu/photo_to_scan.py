@@ -1,5 +1,5 @@
 
-## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.2
+## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.3
 
 # подключение библиотек
 import os
@@ -35,6 +35,8 @@ channel_B		= 1
 # дополнительный проход
 extra_pass		= 1
 extra_mix		= 50
+# запись истории
+enable_undo		= 0
 
 # смена кодировки
 directory = directory.encode('cp1251')
@@ -42,6 +44,7 @@ pattern = pattern.encode('cp1251')
 
 # функция обработки файлов
 def photo_to_scan():
+	global enable_undo
 	# создание списка обрабатываемых файлов
 	file_list = []
 	# обрабатывать только текущий открытый файл
@@ -50,12 +53,14 @@ def photo_to_scan():
 	# обрабатывать все открытые файлы
 	if (mode == 2):
 		file_list = gimp.image_list()
+		enable_undo	= 0
 	# обрабатывать файлы из указанной папки
 	if (mode == 3):
 		base = os.path.splitext(os.path.basename(pattern))
 		extension = base[1]
 		mask = base[0]
 		file_list = glob.glob(directory + mask)
+		enable_undo	= 0
 	print(file_list)
 	for file in file_list:
 		# определяем уже открытый файл
@@ -96,6 +101,9 @@ def photo_to_scan():
 		print("filename: " + filename)
 		# запоминаем "основной" рабочий слой
 		original = drawable
+		# на время отключаем запись истории
+		if (enable_undo < 1):
+			disabled = pdb.gimp_image_undo_disable(image)
 		# создание рабочих слоёв
 		for i in range(0, 2):
 			# убираем выделение
@@ -206,6 +214,9 @@ def photo_to_scan():
 						pdb.gimp_threshold(layer, 128, 255)
 					# переопределяем переменную drawable
 					drawable = layer
+		# включаем запись истории
+		if (enable_undo < 1):
+			enabled = pdb.gimp_image_undo_enable(image)
 		# сохраняем файл
 		pdb.gimp_file_save(image, drawable, filename, file_name)
 		# закрываем файл
