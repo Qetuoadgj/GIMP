@@ -1,24 +1,24 @@
 
-## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.3
+## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.5
 
 # подключение библиотек
 import os
 import glob
 
 # назначение параметров обработки
-mode			= 1
+mode			= 3
 # путь и маска для обрабатываемых файлов (mode == 3)
-directory		= "D:\Downloads\GIMP_test\test\"
+directory		= "D:\\Downloads\\GIMP_test\\test\\"
 pattern			= "*.jpg"
 # закрывать обработанный файл (mode == 2)
 close_files		= 1
 # фильтр резкости
-sharpen			= [35, 35]
+sharpen			= [40, 40]
 # контрастность для  "тёмных" областей
 brightness		= [15, 20]
 contrast		= [-25, -10]
 # эффект фотокопии
-mask_radius		= [8, 16]
+mask_radius		= [8, 20]
 pct_white		= [0.16, 0.16]
 dimensions		= [1920, 2560]
 # эффект "Порог"
@@ -101,6 +101,9 @@ def photo_to_scan():
 		print("filename: " + filename)
 		# запоминаем "основной" рабочий слой
 		original = drawable
+		# вывод сообщения внизу окна
+		message = "Processing: " + file_name + file_ext
+		pdb.gimp_message(message)
 		# на время отключаем запись истории
 		if (enable_undo < 1):
 			disabled = pdb.gimp_image_undo_disable(image)
@@ -185,7 +188,8 @@ def photo_to_scan():
 					layer = pdb.gimp_image_merge_down(image, layer, 1)
 				# сведение всех слоёв
 				if (mode == 3):
-					layer = pdb.gimp_image_flatten(image)
+					# layer = pdb.gimp_image_flatten(image)
+					layer = pdb.gimp_image_merge_down(image, layer, 1)
 				# применение эффекта "Порог" (перевод в Ч/Б)
 				if (use_threshold > 0):
 					pdb.gimp_threshold(layer, 254, 255)
@@ -208,7 +212,8 @@ def photo_to_scan():
 						layer = pdb.gimp_image_merge_down(image, layer, 1)
 					# сведение всех слоёв
 					if (mode == 3):
-						layer = pdb.gimp_image_flatten(image)
+						# layer = pdb.gimp_image_flatten(image)
+						layer = pdb.gimp_image_merge_down(image, layer, 1)
 					# применение эффекта "Порог" (перевод в Ч/Б)
 					if (use_threshold > 0):
 						pdb.gimp_threshold(layer, 128, 255)
@@ -230,6 +235,9 @@ def photo_to_scan():
 		print("mask_radius = " + str(mask_radius_calculated))
 	# вывод сообщения
 	print("F I N I S H E D")
+	# вывод сообщения внизу окна
+	message = "Finished!"
+	pdb.gimp_message(message)
 
 # запуск функции обработки
 photo_to_scan()
