@@ -1,10 +1,10 @@
-
-## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.5
-
+>>> ## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.6
+>>>
 # подключение библиотек
 import os
 import glob
-
+import re
+>>>
 # назначение параметров обработки
 mode			= 3
 # путь и маска для обрабатываемых файлов (mode == 3)
@@ -14,16 +14,16 @@ pattern			= "*.jpg"
 close_files		= 1
 # фильтр резкости
 sharpen			= [40, 40]
-# контрастность для  "тёмных" областей
+# осветление для затемнённых областей
 brightness		= [15, 20]
 contrast		= [-25, -10]
-# эффект фотокопии
+# эффект "Фотокопия"
 mask_radius		= [8, 20]
 pct_white		= [0.16, 0.16]
 dimensions		= [1920, 2560]
 # эффект "Порог"
 low_threshold	= [243, 220]
-# отключение фильтров
+# фильтры / эффекты
 use_sharpen		= 1
 use_contrast	= 1
 use_photocopy	= 1
@@ -37,95 +37,108 @@ extra_pass		= 1
 extra_mix		= 50
 # запись истории
 enable_undo		= 0
-
-# смена кодировки
+>>>
+# смена кодировки путей для обработки
 directory = directory.encode('cp1251')
 pattern = pattern.encode('cp1251')
-
+>>>
 # функция обработки файлов
 def photo_to_scan():
 	global enable_undo
 	# создание списка обрабатываемых файлов
 	file_list = []
-	# обрабатывать только текущий открытый файл
+	# создание списка обработанных файлов
+	files_processed = []
+	# создание списка пропущенных файлов
+	files_skipped = []
+	# создание списка файлов для обработки
 	if (mode == 1):
+		# включить в список обработки только текущий открытый файл
 		file_list = [gimp.image_list()[0]]
-	# обрабатывать все открытые файлы
 	if (mode == 2):
+		# включить в список обработки все открытые в редакторе файлы
 		file_list = gimp.image_list()
+		# отключить запись истории
 		enable_undo	= 0
-	# обрабатывать файлы из указанной папки
 	if (mode == 3):
+		# включить в список обработки все файлы из указанной папки, подходящие по по маске
 		base = os.path.splitext(os.path.basename(pattern))
-		extension = base[1]
 		mask = base[0]
-		file_list = glob.glob(directory + mask)
+		extension = base[1]
+		file_list = glob.glob(directory + mask + extension)
+		# отключить запись истории
 		enable_undo	= 0
-	print(file_list)
 	for file in file_list:
-		# определяем уже открытый файл
+		# пропуск ранее обработанных файлов
+		if (re.match(".* - GIMP", file)):
+			# добавляем файл список пропущенных файлов
+			files_skipped.append(file)
+			# пропускаем обработку файла
+			continue
 		if (mode == 1):
+			# назначаем файл для обработки
 			image = file
-		# определяем уже открытый файл
 		if (mode == 2):
+			# назначаем файл для обработки
 			image = file
-			# создаём новый файл
+			# создаём копию обрабатываемого файла
 			new_image = pdb.gimp_image_duplicate(image)
-			# определяем рабочий файл
+			# назначаем копию как файл для обработки
 			image = new_image
-			# показываем новый файл в редакторе
+			# если включено закрывание обработанных файлов
 			if (close_files < 1):
+				# отображаем копию в редакторе
 				display = pdb.gimp_display_new(image)
-		# открываем файл с диска
 		if (mode == 3):
-			# загружаем файл
+			# загружаем файл в редактор
 			image = pdb.gimp_file_load(file, "File Name")
-			# показываем загруженный файл в редакторе
+			# отображаем загруженный файл в редакторе
 			display = pdb.gimp_display_new(image)
-		# определяем рабочий слой
+		# назначаем рабочий слой
 		drawable = pdb.gimp_image_get_active_drawable(image)
-		# полный путь к файлу
+		# получаем полный путь к файлу
 		if (mode == 3):
+			# из открытого в редакторе файла
 			filename = pdb.gimp_image_get_filename(image)
 		else:
+			# из списка обрабатываемых файлов
 			filename = pdb.gimp_image_get_filename(file)
-		# папка файла
+		# получаем полный путь к папке файла
 		file_directory = os.path.dirname(filename)
-		# имя файла
+		# получаем имя файла (без расширения)
 		file_name = os.path.splitext(os.path.basename(filename))[0]
-		print("file_name: " + file_name)
-		# расширение файла
+		# получаем расширение файла
 		file_ext = os.path.splitext(os.path.basename(filename))[1]
-		# полный путь к новому файлу
+		# определяем полный путь для сохраняемого файла
 		filename = file_directory + "\\" + file_name + " - GIMP" + file_ext
-		print("filename: " + filename)
-		# запоминаем "основной" рабочий слой
+		# запоминаем "основной" рабочий слой для последующего копирования
 		original = drawable
-		# вывод сообщения внизу окна
-		message = "Processing: " + file_name + file_ext
-		pdb.gimp_message(message)
-		# на время отключаем запись истории
+		# если включена остановка записи истории (для экономии ресурсов)
 		if (enable_undo < 1):
+			# на время отключаем запись истории изменений
 			disabled = pdb.gimp_image_undo_disable(image)
-		# создание рабочих слоёв
+		# создание новых слоёв, их обработка и сведение
 		for i in range(0, 2):
-			# убираем выделение
+			# полностью снимаем выделение
 			pdb.gimp_selection_none(image)
 			# создаём копию основного слоя
 			layer = pdb.gimp_layer_copy(original, 0)
+			# добавляем копию основного слоя к изображению
 			pdb.gimp_image_add_layer(image, layer, 0)
-			# переопределяем переменную drawable
+			# назначаем drawable (текущий рабочий слой)
 			drawable = layer
-			# фильтр резкости
+			# если включён фильтр резкости
 			if (use_sharpen > 0):
+				# применяем фильтр резкости
 				pdb.plug_in_sharpen(image, drawable, sharpen[i])
-			# яркость / контрастность
+			# если включён эффект "яркость / контрастность"
 			if (use_contrast > 0):
+				# если включена обработка изображения по "Красному" каналу
 				if (channel_R > 0):
 					# создаём копию канала (Красный)
 					R = pdb.gimp_channel_new_from_component(image, 2, "R")
 					pdb.gimp_image_add_channel(image, R, 0)
-					# канал в выделение
+					# переводим канал в выделение
 					pdb.gimp_image_select_item(image, 2, R)
 					# обращаем выделение
 					pdb.gimp_selection_invert(image)
@@ -133,11 +146,12 @@ def photo_to_scan():
 					pdb.gimp_brightness_contrast(drawable, brightness[i], contrast[i])
 					# удаляем копию канала
 					pdb.gimp_image_remove_channel(image, R)
+				# если включена обработка изображения по "Зелёному" каналу
 				if (channel_G > 0):
 					# создаём копию канала (Зелёный)
 					G = pdb.gimp_channel_new_from_component(image, 2, "G")
 					pdb.gimp_image_add_channel(image, G, 0)
-					# канал в выделение
+					# переводим канал в выделение
 					pdb.gimp_image_select_item(image, 2, G)
 					# обращаем выделение
 					pdb.gimp_selection_invert(image)
@@ -145,11 +159,12 @@ def photo_to_scan():
 					pdb.gimp_brightness_contrast(drawable, brightness[i], contrast[i])
 					# удаляем копию канала
 					pdb.gimp_image_remove_channel(image, G)
+				# если включена обработка изображения по "Синему" каналу
 				if (channel_B > 0):
 					# создаём копию канала (Синий)
 					B = pdb.gimp_channel_new_from_component(image, 2, "B")
 					pdb.gimp_image_add_channel(image, B, 0)
-					# канал в выделение
+					# переводим канал в выделение
 					pdb.gimp_image_select_item(image, 2, B)
 					# обращаем выделение
 					pdb.gimp_selection_invert(image)
@@ -157,88 +172,113 @@ def photo_to_scan():
 					pdb.gimp_brightness_contrast(drawable, brightness[i], contrast[i])
 					# удаляем копию канала
 					pdb.gimp_image_remove_channel(image, B)
-			# убираем выделение
+			# полностью снимаем выделение
 			pdb.gimp_selection_none(image)
 			# эффект фотокопии
 			mask_radius_calculated = 8
+			# если включён эффект "Фотокопия"
 			if (use_photocopy > 0):
+				# определяем ширину изображения
 				width = pdb.gimp_image_width(image)
+				# определяем высоту изображения
 				height = pdb.gimp_image_height(image)
-				# вычисление радиуса маски
+				# определяем радиус маски эффекта из нашей таблицы значений
 				mask_radius_calculated = mask_radius[i]
+				# если включена авто коррекция радиуса маски
 				if (dimensions > 0):
+					# вычисляем радиус маски исходя из размеров изображения
 					mask_radius_calculated = mask_radius[i] * pow(float(width*height) / float(dimensions[0]*dimensions[1]), 0.5)
-				# нормализация параметра mask_radius_calculated между 3.0 и 50.0
+				# устанавливаем верхнее граничное значение радиуса маски равным 50
 				mask_radius_calculated = min(mask_radius_calculated, 50.0)
+				# устанавливаем нижнее граничное значение радиуса маски равным 3
 				mask_radius_calculated = max(mask_radius_calculated, 3.0)
-				# применение эффекта
+				# применяем эффект "Фотокопия"
 				pdb.plug_in_photocopy(image, drawable, mask_radius_calculated, 0.75, 0.50, pct_white[i])
-			# применение эффекта "Порог"
+			# если включён эффект "Порог"
 			if (use_threshold > 0):
+				# применяем эффект "Порог" (придаём изображению максимальную контрастность)
 				pdb.gimp_threshold(drawable, low_threshold[i], 255)
-			# сведение 2х слоёв
+			# если обработаны оба слоя
 			if (i > 0):
-				# прозрачность 50% для верхнего слоя
+				# устанавливаем прозрачность верхнего слоя равной 50%
 				pdb.gimp_layer_set_opacity(layer, 50)
-				# сведение 2х верхних слоёв
+				# если обрабатывается только текущий открытый файл
 				if (mode == 1):
+					# сводим оба верхних (обработанных) слоя
 					layer = pdb.gimp_image_merge_down(image, layer, 1)
-				# сведение 2х верхних слоёв
+				# если обрабатываются все открытые в редакторе файлы
 				if (mode == 2):
+					# сводим оба верхних (обработанных) слоя
 					layer = pdb.gimp_image_merge_down(image, layer, 1)
-				# сведение всех слоёв
+				# если обрабатываются все файлы из указанной папки, подходящие по по маске
 				if (mode == 3):
-					# layer = pdb.gimp_image_flatten(image)
+					# сводим оба верхних (обработанных) слоя
 					layer = pdb.gimp_image_merge_down(image, layer, 1)
-				# применение эффекта "Порог" (перевод в Ч/Б)
+				# если включён эффект "Порог"
 				if (use_threshold > 0):
+					# применяем эффект "Порог" (придаём изображению черно-белый вид)
 					pdb.gimp_threshold(layer, 254, 255)
-				# переопределяем переменную drawable
+				# переопределяем drawable (текущий рабочий слой)
 				drawable = layer
-				# дополнительный проход
+				# если включён дополнительный проход
 				if (extra_pass > 0):
-					# убираем выделение
+					# полностью снимаем выделение
 					pdb.gimp_selection_none(image)
 					# создаём копию основного слоя
 					layer = pdb.gimp_layer_copy(original, 0)
+					# добавляем копию основного слоя к изображению
 					pdb.gimp_image_add_layer(image, layer, 0)
-					# прозрачность extra_mix% для верхнего слоя
+					# устанавливаем прозрачность для верхнего слоя равной extra_mix
 					pdb.gimp_layer_set_opacity(layer, extra_mix)
-					# сведение 2х верхних слоёв
+					# если обрабатывается только текущий открытый файл
 					if (mode == 1):
+						# сводим оба верхних (обработанных) слоя
 						layer = pdb.gimp_image_merge_down(image, layer, 1)
-					# сведение 2х верхних слоёв
+					# если обрабатываются все открытые в редакторе файлы
 					if (mode == 2):
+						# сводим оба верхних (обработанных) слоя
 						layer = pdb.gimp_image_merge_down(image, layer, 1)
-					# сведение всех слоёв
+					# если обрабатываются все файлы из указанной папки, подходящие по по маске
 					if (mode == 3):
-						# layer = pdb.gimp_image_flatten(image)
+						# сводим оба верхних (обработанных) слоя
 						layer = pdb.gimp_image_merge_down(image, layer, 1)
-					# применение эффекта "Порог" (перевод в Ч/Б)
+					# если включён эффект "Порог"
 					if (use_threshold > 0):
+						# применяем эффект "Порог" (придаём изображению черно-белый вид)
 						pdb.gimp_threshold(layer, 128, 255)
-					# переопределяем переменную drawable
+					# переопределяем drawable (текущий рабочий слой)
 					drawable = layer
-		# включаем запись истории
+		# если была включена остановка записи истории
 		if (enable_undo < 1):
+			# обратно включаем запись истории
 			enabled = pdb.gimp_image_undo_enable(image)
-		# сохраняем файл
+		# сохраняем файл на диск
 		pdb.gimp_file_save(image, drawable, filename, file_name)
-		# закрываем файл
+		# если обрабатываются все файлы из указанной папки, подходящие по по маске
 		if (mode == 3):
+			# закрываем файл в редакторе
 			pdb.gimp_display_delete(display)
-		# закрываем файл
+		# если включено закрывание файлов и обрабатываются все открытые в редакторе файлы
 		if (close_files > 0 and mode == 2):
+			# закрываем файл
 			pdb.gimp_image_delete(image)
-		# вывод сообщения
-		print("File finished: " + file_name)
+		# добавляем файл в список обработанных файлов
+		files_processed.append(file)
+		# выводим сообщение о завершении обработки текущего файла
+		print("\nФайл обработан: " + file_name)
+		# выводим значение радиуса маски (debug)
 		print("mask_radius = " + str(mask_radius_calculated))
-	# вывод сообщения
-	print("F I N I S H E D")
-	# вывод сообщения внизу окна
-	message = "Finished!"
-	pdb.gimp_message(message)
-
-# запуск функции обработки
+	# выводим сообщение о завершении обработки всех файлов
+	print("\nОбработка файлов завершена.")
+	# выводим список обработанных
+	print("\nОбработано:")
+	for file in files_processed:
+		print(file)
+	# выводим список пропущенных
+	print("\nПропущено:")
+	for file in files_skipped:
+		print(file)
+>>>
+# запускаем обработку файлов
 photo_to_scan()
-
+>>>
