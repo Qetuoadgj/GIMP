@@ -1,10 +1,11 @@
->>> ## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.6
->>>
+
+## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.7
+
 # подключение библиотек
 import os
 import glob
 import re
->>>
+
 # назначение параметров обработки
 mode			= 3
 # путь и маска для обрабатываемых файлов (mode == 3)
@@ -37,11 +38,13 @@ extra_pass		= 1
 extra_mix		= 50
 # запись истории
 enable_undo		= 0
->>>
+# конвертация изображения в черно-белое (1 bit), файл будет сохранен в формате *.png
+index_to_1bit	= 1
+
 # смена кодировки путей для обработки
 directory = directory.encode('cp1251')
 pattern = pattern.encode('cp1251')
->>>
+
 # функция обработки файлов
 def photo_to_scan():
 	global enable_undo
@@ -248,6 +251,12 @@ def photo_to_scan():
 						pdb.gimp_threshold(layer, 128, 255)
 					# переопределяем drawable (текущий рабочий слой)
 					drawable = layer
+		# если включена конвертация изображения в черно-белое (1 bit)
+		if (index_to_1bit > 0):
+			# установка черно-белой палитры для изображения
+			pdb.gimp_image_convert_indexed(image, 0, 3, 2, FALSE, TRUE, "BW")
+			# определяем полный путь для сохраняемого файла
+			filename = file_directory + "\\" + file_name + " - GIMP" + ".png"
 		# если была включена остановка записи истории
 		if (enable_undo < 1):
 			# обратно включаем запись истории
@@ -278,7 +287,7 @@ def photo_to_scan():
 	print("\nПропущено:")
 	for file in files_skipped:
 		print(file)
->>>
+
 # запускаем обработку файлов
 photo_to_scan()
->>>
+
