@@ -73,7 +73,7 @@ def photo_to_scan():
 		file_list = glob.glob(directory + mask + extension)
 		# отключить запись истории
 		enable_undo	= 0
-	# обработка файлов
+	# обработка списка обработки файлов
 	for file in file_list:
 		# пропуск ранее обработанных файлов
 		if (re.match(".* - GIMP", file)):
