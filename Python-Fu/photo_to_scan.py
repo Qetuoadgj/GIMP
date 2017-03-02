@@ -1,5 +1,5 @@
 
-## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.8
+## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.9
 
 # подключение библиотек
 import os
@@ -64,9 +64,9 @@ def photo_to_scan():
 		file_list = gimp.image_list()
 		# отключить запись истории
 		enable_undo	= 0
-	# если обрабатываются все файлы из указанной папки, подходящие по по маске
+	# если обрабатываются все файлы из указанной папки, подходящие по маске
 	if (mode == 3):
-		# включить в список обработки все файлы из указанной папки, подходящие по по маске
+		# включить в список обработки все файлы из указанной папки, подходящие по маске
 		base = os.path.splitext(os.path.basename(pattern))
 		mask = base[0]
 		extension = base[1]
@@ -97,7 +97,7 @@ def photo_to_scan():
 			if (close_files < 1):
 				# отображаем копию в редакторе
 				display = pdb.gimp_display_new(image)
-		# если обрабатываются все файлы из указанной папки, подходящие по по маске
+		# если обрабатываются все файлы из указанной папки, подходящие по маске
 		if (mode == 3):
 			# загружаем файл в редактор
 			image = pdb.gimp_file_load(file, "File Name")
@@ -219,7 +219,7 @@ def photo_to_scan():
 				if (mode == 2):
 					# сводим оба верхних (обработанных) слоя
 					layer = pdb.gimp_image_merge_down(image, layer, 1)
-				# если обрабатываются все файлы из указанной папки, подходящие по по маске
+				# если обрабатываются все файлы из указанной папки, подходящие по маске
 				if (mode == 3):
 					# сводим оба верхних (обработанных) слоя
 					layer = pdb.gimp_image_merge_down(image, layer, 1)
@@ -247,7 +247,7 @@ def photo_to_scan():
 					if (mode == 2):
 						# сводим оба верхних (обработанных) слоя
 						layer = pdb.gimp_image_merge_down(image, layer, 1)
-					# если обрабатываются все файлы из указанной папки, подходящие по по маске
+					# если обрабатываются все файлы из указанной папки, подходящие по маске
 					if (mode == 3):
 						# сводим оба верхних (обработанных) слоя
 						layer = pdb.gimp_image_merge_down(image, layer, 1)
@@ -269,7 +269,7 @@ def photo_to_scan():
 			enabled = pdb.gimp_image_undo_enable(image)
 		# сохраняем файл на диск
 		pdb.gimp_file_save(image, drawable, filename, file_name)
-		# если обрабатываются все файлы из указанной папки, подходящие по по маске
+		# если обрабатываются все файлы из указанной папки, подходящие по маске
 		if (mode == 3):
 			# закрываем файл в редакторе
 			pdb.gimp_display_delete(display)
