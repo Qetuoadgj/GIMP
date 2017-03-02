@@ -1,5 +1,5 @@
 
-## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.7
+## https://github.com/Qetuoadgj/GIMP/blob/master/Python-Fu/photo_to_scan.py | v 1.0.8
 
 # подключение библиотек
 import os
@@ -54,15 +54,17 @@ def photo_to_scan():
 	files_processed = []
 	# создание списка пропущенных файлов
 	files_skipped = []
-	# создание списка файлов для обработки
+	# если обрабатывается только текущий открытый файл
 	if (mode == 1):
 		# включить в список обработки только текущий открытый файл
 		file_list = [gimp.image_list()[0]]
+	# если обрабатываются все открытые в редакторе файлы
 	if (mode == 2):
 		# включить в список обработки все открытые в редакторе файлы
 		file_list = gimp.image_list()
 		# отключить запись истории
 		enable_undo	= 0
+	# если обрабатываются все файлы из указанной папки, подходящие по по маске
 	if (mode == 3):
 		# включить в список обработки все файлы из указанной папки, подходящие по по маске
 		base = os.path.splitext(os.path.basename(pattern))
@@ -71,6 +73,7 @@ def photo_to_scan():
 		file_list = glob.glob(directory + mask + extension)
 		# отключить запись истории
 		enable_undo	= 0
+	# обработка файлов
 	for file in file_list:
 		# пропуск ранее обработанных файлов
 		if (re.match(".* - GIMP", file)):
@@ -78,9 +81,11 @@ def photo_to_scan():
 			files_skipped.append(file)
 			# пропускаем обработку файла
 			continue
+		# если обрабатывается только текущий открытый файл
 		if (mode == 1):
 			# назначаем файл для обработки
 			image = file
+		# если обрабатываются все открытые в редакторе файлы
 		if (mode == 2):
 			# назначаем файл для обработки
 			image = file
@@ -92,6 +97,7 @@ def photo_to_scan():
 			if (close_files < 1):
 				# отображаем копию в редакторе
 				display = pdb.gimp_display_new(image)
+		# если обрабатываются все файлы из указанной папки, подходящие по по маске
 		if (mode == 3):
 			# загружаем файл в редактор
 			image = pdb.gimp_file_load(file, "File Name")
